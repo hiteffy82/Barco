@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ShipCannon : MonoBehaviour
 {
@@ -8,35 +8,46 @@ public class ShipCannon : MonoBehaviour
 
     [Header("Movimento do Canhão")]
     public float rotationSpeed = 50f;
-    public float minAngle = -10f;
+    public float minAngle = -45f;
     public float maxAngle = 45f;
 
     [Header("Disparo")]
-    public float force = 500f;
+    public float force = 50f;
+    public float spawnOffset = 0.7f;
 
-    private float currentAngle = 0f;
+    private float currentAngle;
+
+    void Start()
+    {
+        float angle = transform.localEulerAngles.x;
+        currentAngle = (angle > 180f) ? angle - 360f : angle;
+    }
 
     void Update()
     {
-        // SUBIR (NUMPAD 8)
+        bool moved = false;
+
         if (Input.GetKey(KeyCode.Keypad8))
         {
             currentAngle += rotationSpeed * Time.deltaTime;
+            moved = true;
         }
 
-        // DESCER (NUMPAD 2)
         if (Input.GetKey(KeyCode.Keypad2))
         {
             currentAngle -= rotationSpeed * Time.deltaTime;
+            moved = true;
         }
 
-        // Limita o ângulo
-        currentAngle = Mathf.Clamp(currentAngle, minAngle, maxAngle);
+        if (moved)
+        {
+            currentAngle = Mathf.Clamp(currentAngle, minAngle, maxAngle);
+        }
 
-        // Aplica rotação (eixo X)
-        transform.localRotation = Quaternion.Euler(currentAngle, 0f, 0f);
+        Vector3 angles = transform.localEulerAngles;
+        angles.x = currentAngle;
+        transform.localEulerAngles = angles;
 
-        // DISPARO (NUMPAD 5)
         if (Input.GetKeyDown(KeyCode.Keypad5))
         {
             Shoot();
@@ -45,47 +56,23 @@ public class ShipCannon : MonoBehaviour
 
     void Shoot()
     {
-        GameObject ball = Instantiate(cannonballPrefab, firePoint.position, firePoint.rotation);
+        Vector3 spawnPos = firePoint.position + firePoint.forward * 1f;
+
+        GameObject ball = Instantiate(cannonballPrefab, spawnPos, firePoint.rotation);
 
         Rigidbody rb = ball.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.AddForce(firePoint.forward * force, ForceMode.Impulse);
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            rb.velocity = firePoint.forward * 20f;
+        }
+
+        Collider ballCol = ball.GetComponent<Collider>();
+        Collider cannonCol = GetComponentInParent<Collider>();
+
+        if (ballCol != null && cannonCol != null)
+        {
+            Physics.IgnoreCollision(ballCol, cannonCol);
         }
     }
 }
-
-
-/*
-using UnityEngine;
-
-public class ShipCannon : MonoBehaviour
-{
-    [Header("Referências")]
-    public GameObject cannonballPrefab;
-    public Transform firePoint;
-
-    [Header("Configuração")]
-    public float force = 500f;
-
-    void Update()
-    {
-        // Teclado (U) ou Gamepad (botão padrão "Fire1")
-        if (Input.GetKeyDown(KeyCode.U) || Input.GetButtonDown("Fire1"))
-        {
-            Shoot();
-        }
-    }
-
-    void Shoot()
-    {
-        GameObject ball = Instantiate(cannonballPrefab, firePoint.position, firePoint.rotation);
-
-        Rigidbody rb = ball.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.AddForce(firePoint.forward * force);
-        }
-    }
-}
-*/
