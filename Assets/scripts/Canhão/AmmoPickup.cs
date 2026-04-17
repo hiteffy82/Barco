@@ -11,11 +11,17 @@ namespace TrilloBit3sIndieGames
         private Collider col;
         private Renderer rend;
 
+        private Vector3 originalScale;
+
         void Start()
         {
             col = GetComponent<Collider>();
             rend = GetComponent<Renderer>();
+
+            originalScale = transform.localScale; // GUARDA ESCALA REAL
         }
+
+        void Update() { if (Time.timeScale == 0f) return; }
 
         private void OnTriggerEnter(Collider other)
         {
@@ -49,9 +55,11 @@ namespace TrilloBit3sIndieGames
             while (t < 1)
             {
                 t += Time.deltaTime * 2f;
-                transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, t);
+                transform.localScale = Vector3.Lerp(Vector3.zero, originalScale, t);
                 yield return null;
             }
+
+            transform.localScale = originalScale; // garante valor final exato
         }
     }
 }

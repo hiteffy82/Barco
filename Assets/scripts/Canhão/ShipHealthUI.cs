@@ -10,6 +10,8 @@ namespace TrilloBit3sIndieGames
 
         void Update()
         {
+            if (Time.timeScale == 0f) return;
+            
             if (health == null || healthFill == null) return;
 
             float percent = health.currentHealth / health.maxHealth;

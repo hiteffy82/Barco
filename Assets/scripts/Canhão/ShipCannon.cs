@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.InputSystem;
 
 namespace TrilloBit3sIndieGames
 {
@@ -57,6 +58,8 @@ namespace TrilloBit3sIndieGames
         public float muzzleFlashDuration = 0.1f;
 
         private Transform ammoTarget;
+
+        private bool isActive = false;
         
         void Start()
         {
@@ -68,24 +71,30 @@ namespace TrilloBit3sIndieGames
             UpdateAmmoUI();
         }
 
-        void Update()
+        void Update() { if (Time.timeScale == 0f) return; }
+
+        public void SetActive(bool value)
         {
-            bool moved = false;
+            isActive = value;
 
-            if (Input.GetKey(KeyCode.Keypad8))
+            // aqui pode ligar UI, highlight etc
+            if (cannonUI != null)
+                cannonUI.gameObject.SetActive(value);
+
+            if (value)
             {
-                currentAngle += rotationSpeed * Time.deltaTime;
-                moved = true;
+                UpdateAmmoUI(); // FORÇA atualização ao ativar
             }
+        }
+        
+        public void HandleInput(float inputVertical, bool shootPressed)
+        {
+            if (!isActive) return;
 
-            if (Input.GetKey(KeyCode.Keypad2))
+            // MOVIMENTO
+            if (!Mathf.Approximately(inputVertical, 0f))
             {
-                currentAngle -= rotationSpeed * Time.deltaTime;
-                moved = true;
-            }
-
-            if (moved)
-            {
+                currentAngle += inputVertical * rotationSpeed * Time.deltaTime;
                 currentAngle = Mathf.Clamp(currentAngle, minAngle, maxAngle);
             }
 
@@ -93,7 +102,8 @@ namespace TrilloBit3sIndieGames
             angles.x = currentAngle;
             transform.localEulerAngles = angles;
 
-            if (Input.GetKey(KeyCode.Keypad5) && Time.time >= nextFireTime)
+            // DISPARO
+            if (shootPressed && Time.time >= nextFireTime)
             {
                 if (currentAmmo > 0)
                 {
@@ -102,8 +112,7 @@ namespace TrilloBit3sIndieGames
                     nextFireTime = Time.time + fireRate;
 
                     UpdateAmmoUI();
-
-                    TriggerMuzzleFlashUI(); 
+                    TriggerMuzzleFlashUI();
                 }
                 else
                 {

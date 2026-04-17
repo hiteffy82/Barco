@@ -7,6 +7,8 @@ namespace TrilloBit3sIndieGames
     {
         public float damage = 25f;
 
+        void Update() { if (Time.timeScale == 0f) return; }
+
         private void OnCollisionEnter(Collision collision)
         {
             Health target = collision.gameObject.GetComponentInParent<Health>();

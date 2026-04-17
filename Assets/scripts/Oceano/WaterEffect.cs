@@ -1,17 +1,13 @@
-﻿//Este script usava Planes com 2000 de scala, por isso nao funcionava
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace TrilloBit3sIndieGames
 {
     [RequireComponent(typeof(MeshFilter))]
     public class WaterEffect : MonoBehaviour
     {
-        //-----------------------------------------------------------------------------
-        // Ajustar buoyancyMultiplier do FlutuadorDeAgua caso alterar valor aqui
         public float waveSpeed = 3;//1.0f
         public float waveHeight = 3;//0.5f
         public float waveFrequency = 1.0f;
-        //-----------------------------------------------------------------------------
 
         private MeshFilter meshFilter;
         private Mesh waterMesh;
@@ -42,6 +38,8 @@ namespace TrilloBit3sIndieGames
 
         void Update()
         {
+            if (Time.timeScale == 0f) return;
+
             if (waterMesh == null || originalVertices == null || originalVertices.Length == 0) 
                 return;
         }
